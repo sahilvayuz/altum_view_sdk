@@ -133,7 +133,8 @@ class AltumPersonService {
     required int      personId,
     required Uint8List imageBytes,
     String            filename = 'face.jpg',
-  }) async {
+  })
+  async {
     final request = http.MultipartRequest(
       'POST',
       Uri.parse('$_baseApi/people/$personId/faces'),

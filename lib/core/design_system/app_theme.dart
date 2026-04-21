@@ -1,100 +1,81 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// core/theme/app_theme.dart
+// ─────────────────────────────────────────────────────────────────────────────
+
 import 'package:flutter/material.dart';
 
-import 'app_theme_config.dart';
-import 'app_typography.dart';
-import 'components/app_bar_theme.dart';
-import 'components/button_theme.dart';
-import 'components/card_theme.dart';
-import 'components/input_theme.dart';
-import 'extensions/app_semantic_colors.dart';
-import 'tokens/app_palette.dart';
+class AppTheme {
+  // ── Colors ─────────────────────────────────────────────────────────────────
+  static const Color primary       = Color(0xFF0A84FF);
+  static const Color primaryDark   = Color(0xFF0066CC);
+  static const Color surface       = Color(0xFF1C1C1E);
+  static const Color surfaceCard   = Color(0xFF2C2C2E);
+  static const Color surfaceCard2  = Color(0xFF3A3A3C);
+  static const Color background    = Color(0xFF000000);
+  static const Color onBackground  = Color(0xFFFFFFFF);
+  static const Color onSurface     = Color(0xFFEBEBF5);
+  static const Color onSurfaceSub  = Color(0xFF8E8E93);
+  static const Color success       = Color(0xFF30D158);
+  static const Color warning       = Color(0xFFFF9F0A);
+  static const Color error         = Color(0xFFFF453A);
+  static const Color divider       = Color(0xFF38383A);
 
-abstract final class AppTheme {
-  static const _defaultConfig = AppThemeConfig();
-
-  static ThemeData lightTheme([AppThemeConfig? config]) {
-    final cfg = config ?? _defaultConfig;
-    return _buildTheme(cfg.lightPalette, Brightness.light, cfg.fontFamily);
-  }
-
-  static ThemeData darkTheme([AppThemeConfig? config]) {
-    final cfg = config ?? _defaultConfig;
-    return _buildTheme(cfg.darkPalette, Brightness.dark, cfg.fontFamily);
-  }
-
-  static ColorScheme _buildColorScheme(
-    AppPalette palette,
-    Brightness brightness,
-  ) {
-    return ColorScheme(
-      brightness: brightness,
-      primary: palette.brandPrimary,
-      onPrimary: palette.onPrimary,
-      primaryContainer: palette.brandPrimary.withValues(alpha: 0.12),
-      onPrimaryContainer: palette.brandPrimary,
-      secondary: palette.brandSecondary,
-      onSecondary: palette.onSecondary,
-      secondaryContainer: palette.brandSecondary.withValues(alpha: 0.12),
-      onSecondaryContainer: palette.brandSecondary,
-      tertiary: palette.brandAccent,
-      onTertiary: palette.onAccent,
-      tertiaryContainer: palette.brandAccent.withValues(alpha: 0.12),
-      onTertiaryContainer: palette.brandAccent,
-      error: palette.error,
-      onError: palette.onError,
-      errorContainer: palette.error.withValues(alpha: 0.12),
-      onErrorContainer: palette.error,
-      surface: palette.surface,
-      onSurface: palette.textPrimary,
-      surfaceContainerHighest: palette.surfaceHigh,
-      onSurfaceVariant: palette.textSecondary,
-      outline: palette.border,
-      outlineVariant: palette.borderSubtle,
-      shadow: palette.textPrimary.withValues(alpha: 0.15),
-      scrim: palette.textPrimary.withValues(alpha: 0.32),
-      inverseSurface: palette.textPrimary,
-      onInverseSurface: palette.surface,
-      inversePrimary: brightness == Brightness.light
-          ? AppPalettes.dark.brandPrimary
-          : AppPalettes.light.brandPrimary,
-    );
-  }
-
-  static ThemeData _buildTheme(
-    AppPalette palette,
-    Brightness brightness,
-    String fontFamily,
-  ) {
-    final colorScheme = _buildColorScheme(palette, brightness);
-    final textTheme = AppTypography.textTheme(fontFamily);
-
-    return ThemeData(
-      useMaterial3: true,
-      brightness: brightness,
-      colorScheme: colorScheme,
-      fontFamily: fontFamily,
-      textTheme: textTheme,
-      scaffoldBackgroundColor: palette.surface,
-      appBarTheme: AppAppBarTheme.build(palette, textTheme),
-      elevatedButtonTheme: AppButtonTheme.elevatedButtonTheme(
-        palette,
-        textTheme,
+  static ThemeData get dark => ThemeData(
+    brightness: Brightness.dark,
+    scaffoldBackgroundColor: background,
+    primaryColor: primary,
+    colorScheme: const ColorScheme.dark(
+      primary: primary,
+      surface: surface,
+      error: error,
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: background,
+      elevation: 0,
+      centerTitle: false,
+      titleTextStyle: TextStyle(
+        color: onBackground,
+        fontSize: 28,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.5,
       ),
-      outlinedButtonTheme: AppButtonTheme.outlinedButtonTheme(
-        palette,
-        textTheme,
+      iconTheme: IconThemeData(color: primary),
+    ),
+    cardTheme: CardThemeData(
+      color: surfaceCard,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(16)),
       ),
-      textButtonTheme: AppButtonTheme.textButtonTheme(palette, textTheme),
-      filledButtonTheme: AppButtonTheme.filledButtonTheme(palette, textTheme),
-      cardTheme: AppCardTheme.build(palette),
-      inputDecorationTheme: AppInputTheme.build(palette, textTheme),
-      dividerTheme: DividerThemeData(
-        color: palette.borderSubtle,
-        thickness: 1,
-        space: 1,
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: primary,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+        textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        elevation: 0,
       ),
-      iconTheme: IconThemeData(color: palette.textPrimary, size: 24),
-      extensions: [AppSemanticColors.fromPalette(palette)],
-    );
-  }
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: surfaceCard,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: primary, width: 1.5),
+      ),
+      hintStyle: TextStyle(color: onSurfaceSub),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    ),
+    dividerTheme: const DividerThemeData(color: divider, thickness: 0.5),
+    listTileTheme: const ListTileThemeData(
+      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      tileColor: Colors.transparent,
+    ),
+  );
 }
