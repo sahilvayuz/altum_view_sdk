@@ -76,6 +76,16 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
                               color: AppTheme.onSurfaceSub, size: 40),
                         ),
                       ),
+                    if(provider.previousCalibrationImage?.isNotEmpty==true)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.network(
+                          provider.previousCalibrationImage!,
+                          width: double.infinity,
+                          height: 200,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     const SizedBox(height: 20),
 
                     // ── Status message ─────────────────────────────────────

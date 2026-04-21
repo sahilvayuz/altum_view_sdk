@@ -84,8 +84,12 @@ class DioClient {
       );
 
   /// Downloads raw bytes (images, background frames, etc.)
-  Future<Response<List<int>>> getBytes(String url) => Dio().get<List<int>>(
-    url,
+  ///
+  /// FIX: Uses the authenticated _dio instance (with _AuthInterceptor) instead
+  /// of a naked Dio() — the old Dio().get() had no Bearer token → 401 on
+  /// any endpoint that requires auth (e.g. /cameras/:id/view?preview_token=…).
+  Future<Response<List<int>>> getBytes(String path) => _dio.get<List<int>>(
+    path,
     options: Options(responseType: ResponseType.bytes),
   );
 
@@ -167,7 +171,7 @@ class _ErrorInterceptor extends Interceptor {
   }
 
   AppException _mapStatusCode(DioException err) {
-    final code = err.response?.statusCode ?? 0;
+    final code    = err.response?.statusCode ?? 0;
     final message = _extractMessage(err.response?.data);
     return switch (code) {
       400 => BadRequestException(message ?? 'Bad request'),
@@ -175,7 +179,8 @@ class _ErrorInterceptor extends Interceptor {
       403 => UnauthorizedException(message ?? 'Forbidden'),
       404 => NotFoundException(message ?? 'Resource not found'),
       422 => BadRequestException(message ?? 'Validation failed'),
-      500 || 502 || 503 => ServerException(message ?? 'Server error — try again later'),
+      500 || 502 || 503 =>
+          ServerException(message ?? 'Server error — try again later'),
       _ => ApiException(message ?? 'HTTP $code error'),
     };
   }

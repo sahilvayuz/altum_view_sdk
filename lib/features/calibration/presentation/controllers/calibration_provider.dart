@@ -26,6 +26,8 @@ class CalibrationProvider extends ChangeNotifier {
           ? (previousState as SuccessState<List<CalibrationRecordModel>>).data
           : [];
 
+  String? previousCalibrationImage;
+
   // ── Run full calibration ───────────────────────────────────────────────────
 
   Future<void> runCalibration(int cameraId) async {
@@ -78,6 +80,7 @@ class CalibrationProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final records = await _repo.getPreviousCalibrations(cameraId);
+      previousCalibrationImage = records.first.backgroundUrl;
       previousState = SuccessState(records);
     } catch (e) {
       previousState = ErrorState(e.toString());

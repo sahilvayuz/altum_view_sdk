@@ -4,6 +4,7 @@
 
 import 'dart:developer';
 import 'dart:typed_data';
+import 'package:altum_view_sdk/features/altum_view/presentation/controllers/altum_view_controller.dart';
 import 'package:altum_view_sdk/features/calibration/data/data_source/calibration_remote_data_source.dart';
 import 'package:altum_view_sdk/features/calibration/domain/models/calibration_model.dart';
 
@@ -17,7 +18,7 @@ class CalibrationRepositoryImpl implements CalibrationRepository {
   String generatePreviewToken() => _source.generatePreviewToken();
 
   @override
-  Future<void> enablePreview(String token) => _source.enablePreview(token);
+  Future<void> enablePreview(String token) => _source.enablePreview(token: token, serialNumber: deviceSerialNumber ?? '');
 
   @override
   Future<Uint8List?> getPreviewImage({
