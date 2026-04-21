@@ -6,8 +6,10 @@ import 'dart:typed_data';
 import '../models/skeleton_model.dart';
 
 abstract interface class SkeletonStreamRepository {
-  Future<void>          start();
-  Future<void>          stop();
+  Future<void> start();
+  Future<void> stop();
   Stream<SkeletonFrame> get skeletonFrames;
-  Uint8List?            get backgroundImage;
+  Stream<SkeletonStreamStatus> get statusStream;
+  Uint8List? get backgroundImage;
+  bool get cameraOffline;
 }

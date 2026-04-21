@@ -22,5 +22,11 @@ class SkeletonStreamRepositoryImpl implements SkeletonStreamRepository {
   Stream<SkeletonFrame> get skeletonFrames => _manager.skeletonFrames;
 
   @override
+  Stream<SkeletonStreamStatus> get statusStream => _manager.statusStream;
+
+  @override
   Uint8List? get backgroundImage => _manager.backgroundImage;
+
+  @override
+  bool get cameraOffline => _manager.cameraOffline;
 }
