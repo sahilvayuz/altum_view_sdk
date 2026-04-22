@@ -141,7 +141,7 @@ class _SkeletonStreamPage extends StatelessWidget {
       ),
       body: AltumStreamView(
         cameraId:            cameraId,
-        orientation:         StreamOrientation.landscape,
+        orientation:         StreamOrientation.portrait,
         width:               300,
         useExternalProvider: true,
       ),
@@ -216,6 +216,15 @@ class _StreamCanvasState extends State<_StreamCanvas> {
   // nativeW > nativeH for a landscape sensor JPEG.
   int? _nativeW;
   int? _nativeH;
+  SkeletonStreamProvider? _provider;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Called whenever the inherited widget (Provider) changes.
+    // Safe to look up ancestors here — store the reference.
+    _provider = context.read<SkeletonStreamProvider>();
+  }
 
   @override
   void initState() {
@@ -227,7 +236,8 @@ class _StreamCanvasState extends State<_StreamCanvas> {
 
   @override
   void dispose() {
-    context.read<SkeletonStreamProvider>().stopStream();
+    // Use the saved reference — never touch context here
+    _provider?.stopStream();
     super.dispose();
   }
 
