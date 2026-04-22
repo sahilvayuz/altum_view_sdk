@@ -12,21 +12,10 @@ class SkeletonStreamRepositoryImpl implements SkeletonStreamRepository {
   final SkeletonStreamManager _manager;
   SkeletonStreamRepositoryImpl(this._manager);
 
-  @override
-  Future<void> start() => _manager.start();
-
-  @override
-  Future<void> stop() => _manager.stop();
-
-  @override
-  Stream<SkeletonFrame> get skeletonFrames => _manager.skeletonFrames;
-
-  @override
-  Stream<SkeletonStreamStatus> get statusStream => _manager.statusStream;
-
-  @override
-  Uint8List? get backgroundImage => _manager.backgroundImage;
-
-  @override
-  bool get cameraOffline => _manager.cameraOffline;
+  @override Future<void>          start()           => _manager.start();
+  @override Future<void>          stop()            => _manager.stop();
+  @override Stream<SkeletonFrame> get skeletonFrames => _manager.skeletonFrames;
+  @override Stream<StreamStatus>  get statusStream   => _manager.statusStream;
+  @override Uint8List?            get backgroundImage => _manager.backgroundImage;
+  @override StreamStatus          get status          => _manager.status;
 }

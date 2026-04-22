@@ -1,5 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // features/skeleton_stream/presentation/controllers/skeleton_stream_provider.dart
+//
+// FIX: dispose() calls stopStream() so the manager is always cleaned up when
+// the ChangeNotifierProvider leaves the widget tree (e.g. Navigator.pop).
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'dart:async';
@@ -7,6 +10,7 @@ import 'dart:typed_data';
 
 import 'package:altum_view_sdk/core/state/view_state.dart';
 import 'package:altum_view_sdk/features/skeleton_stream/domain/repository/skeleton_stream_repository.dart';
+import 'package:altum_view_sdk/features/skeleton_stream/presentation/managers/skeleton_stream_manager.dart';
 import 'package:flutter/foundation.dart';
 import '../../domain/models/skeleton_model.dart';
 
@@ -14,90 +18,82 @@ class SkeletonStreamProvider extends ChangeNotifier {
   final SkeletonStreamRepository _repo;
   SkeletonStreamProvider(this._repo);
 
-  ViewState<void> streamState = const IdleState();
-  SkeletonFrame? latestFrame;
-  Uint8List? backgroundImage;
-  SkeletonStreamStatus streamStatus = SkeletonStreamStatus.idle;
+  ViewState<void>  streamState  = const IdleState();
+  SkeletonFrame?   latestFrame;
+  Uint8List?       backgroundImage;
+  StreamStatus     streamStatus = StreamStatus.idle;
 
   StreamSubscription<SkeletonFrame>? _frameSub;
-  StreamSubscription<SkeletonStreamStatus>? _statusSub;
+  StreamSubscription<StreamStatus>?  _statusSub;
+
+  bool _disposed = false;
 
   bool get isStreaming =>
       streamState is LoadingState || streamState is SuccessState;
 
-  // ── Start stream ───────────────────────────────────────────────────────────
+  // ── Start ──────────────────────────────────────────────────────────────────
 
   Future<void> startStream() async {
-    if (isStreaming) return;
+    if (isStreaming || _disposed) return;
 
     streamState = const LoadingState();
-    streamStatus = SkeletonStreamStatus.connecting;
-    notifyListeners();
+    _notify();
 
     try {
+      _statusSub = _repo.statusStream.listen((s) {
+        streamStatus = s;
+        _notify();
+      });
+
       await _repo.start();
 
-      // Camera offline — manager stopped itself, surface the status
-      if (_repo.cameraOffline) {
-        streamState = const ErrorState('Camera is offline');
-        streamStatus = SkeletonStreamStatus.cameraOffline;
-        notifyListeners();
-        return;
-      }
-
       backgroundImage = _repo.backgroundImage;
-      streamState = const SuccessState(null);
-      streamStatus = SkeletonStreamStatus.live;
-      notifyListeners();
+      streamState     = const SuccessState(null);
+      _notify();
 
-      // Frame subscription
       _frameSub = _repo.skeletonFrames.listen(
             (frame) {
           latestFrame = frame;
-          notifyListeners();
+          _notify();
         },
         onError: (e) {
           streamState = ErrorState(e.toString());
-          streamStatus = SkeletonStreamStatus.error;
-          notifyListeners();
+          _notify();
         },
       );
-
-      // Status subscription (silence watchdog, republish, etc.)
-      _statusSub = _repo.statusStream.listen((status) {
-        streamStatus = status;
-        if (status == SkeletonStreamStatus.waitingForFrame ||
-            status == SkeletonStreamStatus.waitingRepublish) {
-          latestFrame = null;
-        }
-        notifyListeners();
-      });
     } catch (e) {
       streamState = ErrorState(e.toString());
-      streamStatus = SkeletonStreamStatus.error;
-      notifyListeners();
+      _notify();
     }
   }
 
-  // ── Stop stream ────────────────────────────────────────────────────────────
+  // ── Stop ───────────────────────────────────────────────────────────────────
 
   Future<void> stopStream() async {
     await _frameSub?.cancel();
     await _statusSub?.cancel();
-    _frameSub = null;
-    _statusSub = null;
+    _frameSub    = null;
+    _statusSub   = null;
     await _repo.stop();
-    streamState = const IdleState();
-    streamStatus = SkeletonStreamStatus.idle;
-    latestFrame = null;
-    notifyListeners();
+    streamState  = const IdleState();
+    streamStatus = StreamStatus.idle;
+    latestFrame  = null;
+    _notify();
   }
+
+  // ── Dispose — triggered automatically when provider leaves the tree ────────
+  // This fires when Navigator.pop() removes SkeletonStreamScreen.
 
   @override
   void dispose() {
+    _disposed = true;
     _frameSub?.cancel();
     _statusSub?.cancel();
-    _repo.stop();
+    _repo.stop(); // stops MQTT, cancels timers, closes streams → no more logs
     super.dispose();
+  }
+
+  void _notify() {
+    if (!_disposed) notifyListeners();
   }
 }
